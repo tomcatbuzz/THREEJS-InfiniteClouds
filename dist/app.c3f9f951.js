@@ -36303,7 +36303,7 @@ exports.MapControls = MapControls;
 },{"three":"node_modules/three/build/three.module.js"}],"js/shader/fragment.glsl":[function(require,module,exports) {
 module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float progress;\nuniform sampler2D t1;\nuniform vec4 resolution;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nfloat PI = 3.141592653589793238;\nvarying float vAlpha;\nvoid main()\t{\n\t// pink\n  // vec3 color = vec3(0.835, 0.000, 0.564);\n\t// dark blue\n\tvec3 color = vec3(0., 0.000, 139.);\n\t\n\tvec4 map = texture2D(t1, vUv);\n  \n\tif(map.r < 0.01) discard;\n\n\t// vec3 final = color*map.r;\n\tvec3 final = mix(vec3(1.), color, 1. - map.r);\n\n\tfloat opacity = smoothstep(0.5, 1., length(vPosition.xy));\n\tgl_FragColor = vec4(vUv, 0.0, vAlpha);\n\t// gl_FragColor = map;\n\tgl_FragColor = vec4(final, vAlpha*opacity*0.3);\n\t// gl_FragColor.a = vAlpha*opacity;\n\t// gl_FragColor = vec4(opacity);\n}";
 },{}],"js/shader/vertex.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nvarying float vAlpha;\nuniform vec2 pixels;\nattribute vec3 translate;\nattribute float aRotate;\n\nmat4 rotationMatrix(vec3 axis, float angle) {\n    axis = normalize(axis);\n    float s = sin(angle);\n    float c = cos(angle);\n    float oc = 1.0 - c;\n    \n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\n                0.0,                                0.0,                                0.0,                                1.0);\n}\n\nvec3 rotate(vec3 v, vec3 axis, float angle) {\n\tmat4 m = rotationMatrix(axis, angle);\n\treturn (m * vec4(v, 1.0)).xyz;\n}\n\nfloat PI = 3.141592653589793238;\nvoid main() {\n  // create random on this value + 0.33 to change in sprite\n  vUv = (uv - vec2(0.5))/3. + vec2(0.5 + 0.33, 0.5);\n  \n  float depth = 5.;\n  // original uv before 6image file using cloud2 nice\n  // vUv = uv;\n  vec3 newpos = position;\n  \n  newpos = rotate(newpos, vec3(0., 0., 1.), aRotate);\n  newpos += translate;\n  newpos.z = -mod(newpos.z - time*0.02, 5.);\n  // calculate distance\n  vPosition = newpos;\n  vAlpha = smoothstep(-5. +3.5, -4. +3.5, newpos.z);\n  gl_Position = projectionMatrix * modelViewMatrix * vec4( newpos, 1.0 );\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nvarying float vAlpha;\nuniform vec2 pixels;\nattribute vec3 translate;\nattribute float aRotate;\n\nmat4 rotationMatrix(vec3 axis, float angle) {\n    axis = normalize(axis);\n    float s = sin(angle);\n    float c = cos(angle);\n    float oc = 1.0 - c;\n    \n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\n                0.0,                                0.0,                                0.0,                                1.0);\n}\n\nvec3 rotate(vec3 v, vec3 axis, float angle) {\n\tmat4 m = rotationMatrix(axis, angle);\n\treturn (m * vec4(v, 1.0)).xyz;\n}\n\nfloat PI = 3.141592653589793238;\nvoid main() {\n  // create random on this value + 0.33 to change in sprite\n  vUv = (uv - vec2(0.5))/3. + vec2(0.5 + 0.33, 0.5);\n  \n  float depth = 5.;\n  // original uv before 6image file using cloud2 nice\n  // vUv = uv;\n  vec3 newpos = position;\n  \n  newpos = rotate(newpos, vec3(0., 0., 1.), aRotate);\n  newpos += translate;\n  newpos.z = -mod(newpos.z - time*0.01, 5.);\n  // calculate distance\n  vPosition = newpos;\n  vAlpha = smoothstep(-5. +3.5, -4. +3.5, newpos.z);\n  gl_Position = projectionMatrix * modelViewMatrix * vec4( newpos, 1.0 );\n}";
 },{}],"node_modules/dat.gui/build/dat.gui.module.js":[function(require,module,exports) {
 "use strict";
 
@@ -39297,7 +39297,9 @@ class Sketch {
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true
+      antialias: true // alpha: true,
+      // premultipliedAlpha: false
+
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.setSize(this.width, this.height); // pastel blue nice 
@@ -39306,7 +39308,8 @@ class Sketch {
 
     this.renderer.setClearColor(0x0096FF, 1); // light blue 
     // this.renderer.setClearColor(0xADD8E6, 1);
-    // this.renderer.setClearColor(0x071C24, 1);
+    // aqua
+    // this.renderer.setClearColor(0x00FFFF, 1);
 
     this.renderer.physicallyCorrectLights = true;
     this.renderer.outputEncoding = THREE.sRGBEncoding; // not sure if needed here
@@ -39334,6 +39337,8 @@ class Sketch {
     this.COLOR3 = new THREE.Color(0x0096FF);
     this.colorArray = [this.COLOR, this.COLOR1, this.COLOR2, this.COLOR3];
     this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+    this.point = new THREE.Vector3();
     this.addObjects();
     this.resize();
     this.render();
@@ -39398,7 +39403,12 @@ class Sketch {
       fragmentShader: _fragment.default,
       depthTest: false,
       depthWrite: false,
-      blend: THREE.MultiplyBlending
+      blend: THREE.CustomBlending,
+      blendSrc: THREE.OneFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor // blend: THREE.MultiplyBlending,
+      // minFilter: THREE.LinearFilter,
+      // magFilter: THREE.LinearFilter
+
     });
     this.geometry = new THREE.PlaneBufferGeometry(0.5, 0.5, 1, 1);
     this.ig = new THREE.InstancedBufferGeometry();
@@ -39423,22 +39433,35 @@ class Sketch {
   }
 
   mouseEvent() {
-    this.mouse = new THREE.Vector2();
-
-    function onMouseMove(e) {
-      this.mouse.x = e.clientX / window.innerWidth * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    window.addEventListener('mousemove', event => {
+      this.mouse.x = event.clientX / window.innerWidth * 2 - 1;
+      this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersects = this.raycaster.intersectObjects(this.scene);
+      const intersects = this.raycaster.intersectObjects([this.plane]);
       console.log(intersects, "hello");
+      this.scene.background = this.colorArray[this.index]; // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
 
-      for (let i = 0; i < intersects.length; i++) {
-        intersects[i].object.material.color.set(0xff0000);
-      }
-    }
+      console.log(this.index, 'index');
 
-    window.addEventListener('mousemove', onMouseMove, false);
-  }
+      if (intersects[0]) {
+        this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1;
+      } // for ( let i = 0; i < intersects.length; i ++ ) {
+      //   intersects[ i ].object.material.color.set( 0xff0000 );
+      // }
+
+    });
+  } // raycasterEvent() {
+  //   window.addEventListener('pointermove', (event) => {
+  //     this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
+  //     this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
+  //     this.raycaster.setFromCamera(this.pointer, this.camera);
+  //     const intersects = this.raycaster.intersectObjects([this.plane]);
+  //     if(intersects[0]) {
+  //       this.point.copy(intersects[0].point)
+  //     }
+  //   });
+  // }
+
 
   changeColor() {
     document.getElementById('container').addEventListener('click', () => {
@@ -39503,7 +39526,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58731" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62776" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

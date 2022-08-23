@@ -35,7 +35,7 @@ void main() {
   
   newpos = rotate(newpos, vec3(0., 0., 1.), aRotate);
   newpos += translate;
-  newpos.z = -mod(newpos.z - time*0.02, 5.);
+  newpos.z = -mod(newpos.z - time*0.01, 5.);
   // calculate distance
   vPosition = newpos;
   vAlpha = smoothstep(-5. +3.5, -4. +3.5, newpos.z);

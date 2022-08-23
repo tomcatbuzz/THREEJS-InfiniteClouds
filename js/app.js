@@ -28,7 +28,9 @@ export default class Sketch {
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true
+      antialias: true,
+      // alpha: true,
+      // premultipliedAlpha: false
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(this.width, this.height);
@@ -80,6 +82,8 @@ export default class Sketch {
     this.colorArray = [this.COLOR, this.COLOR1, this.COLOR2, this.COLOR3]
 
     this.raycaster = new THREE.Raycaster();
+    this.mouse = new THREE.Vector2();
+    this.point = new THREE.Vector3();
 
     this.addObjects();
     this.resize();
@@ -135,7 +139,12 @@ export default class Sketch {
       fragmentShader: fragment, 
       depthTest: false,
       depthWrite: false,
-      blend: THREE.MultiplyBlending
+      blend: THREE.CustomBlending,
+      blendSrc: THREE.OneFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor,
+      // blend: THREE.MultiplyBlending,
+      // minFilter: THREE.LinearFilter,
+      // magFilter: THREE.LinearFilter
     });
     this.geometry = new THREE.PlaneBufferGeometry(0.5, 0.5, 1, 1);
 
@@ -170,27 +179,53 @@ export default class Sketch {
   }
 
   mouseEvent() {
-    this.mouse = new THREE.Vector2();
-    function onMouseMove(e) {
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    window.addEventListener('mousemove', (event) => {
+      this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+      this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
       this.raycaster.setFromCamera(this.mouse, this.camera);
       
-      const intersects = this.raycaster.intersectObjects(this.scene);
+      const intersects = this.raycaster.intersectObjects([this.plane]);
       console.log(intersects, "hello");
-      for ( let i = 0; i < intersects.length; i ++ ) {
-		    intersects[ i ].object.material.color.set( 0xff0000 );
-	    }
-    } 
-    window.addEventListener('mousemove', onMouseMove, false );
+
+      this.scene.background = this.colorArray[this.index];
+
+      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+      
+      console.log(this.index, 'index')
+      
+        
+      if(intersects[0]) {
+        this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
+      }
+
+      // for ( let i = 0; i < intersects.length; i ++ ) {
+		  //   intersects[ i ].object.material.color.set( 0xff0000 );
+	    // }
+    });
   }
+
+  // raycasterEvent() {
+  //   window.addEventListener('pointermove', (event) => {
+
+  //     this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
+  //     this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
+
+  //     this.raycaster.setFromCamera(this.pointer, this.camera);
+  //     const intersects = this.raycaster.intersectObjects([this.plane]);
+
+  //     if(intersects[0]) {
+  //       this.point.copy(intersects[0].point)
+  //     }
+      
+  //   });
+  // }
 
   changeColor() {
     document.getElementById('container').addEventListener('click', () => {
       // this.scene.background = new THREE.Color(0xA7C7E7)
       this.scene.background = this.colorArray[this.index];
 
-      this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+      this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
 
       console.log(this.index, 'index')
       
