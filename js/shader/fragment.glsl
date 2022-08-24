@@ -1,6 +1,7 @@
 uniform float time;
 uniform float progress;
 uniform sampler2D t1;
+uniform sampler2D t2;
 uniform vec4 resolution;
 varying vec2 vUv;
 varying vec3 vPosition;
@@ -14,15 +15,15 @@ void main()	{
 	
 	vec4 map = texture2D(t1, vUv);
   
-	if(map.r < 0.01) discard;
+	if(map.r < 0.03) discard;
 
 	// vec3 final = color*map.r;
 	vec3 final = mix(vec3(1.), color, 1. - map.r);
-
-	float opacity = smoothstep(0.5, 1., length(vPosition.xy));
+  // values below were 0.5 and 1
+	float opacity = smoothstep(0.3, 1.5, length(vPosition.xy));
 	gl_FragColor = vec4(vUv, 0.0, vAlpha);
 	// gl_FragColor = map;
-	gl_FragColor = vec4(final, vAlpha*opacity*0.3);
+	gl_FragColor = vec4(final, vAlpha*opacity*0.2);
 	// gl_FragColor.a = vAlpha*opacity;
 	// gl_FragColor = vec4(opacity);
 }

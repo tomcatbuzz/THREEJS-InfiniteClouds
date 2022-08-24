@@ -19,7 +19,7 @@ import test from '../img/myStrokes.png';
 import cloud9 from '../img/cloud9.png';
 import cloud10 from '../img/clouds10.png';
 
-// import gsap from 'gsap';
+import gsap from 'gsap';
 
 export default class Sketch {
   constructor(options) {
@@ -28,9 +28,7 @@ export default class Sketch {
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-      // alpha: true,
-      // premultipliedAlpha: false
+      antialias: true,     
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(this.width, this.height);
@@ -79,7 +77,8 @@ export default class Sketch {
     this.COLOR1 = new THREE.Color(0xADD8E6);
     this.COLOR2 = new THREE.Color(0x00FFFF);
     this.COLOR3 = new THREE.Color(0x0096FF);
-    this.colorArray = [this.COLOR, this.COLOR1, this.COLOR2, this.COLOR3]
+    this.COLOR4 = new THREE.Color(0xFFB6C1);
+    this.colorArray = [this.COLOR, this.COLOR1, this.COLOR2, this.COLOR3, this.COLOR4]
 
     this.raycaster = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
@@ -92,6 +91,7 @@ export default class Sketch {
     this.settings();
     this.mouseEvent();
     this.changeColor();
+    // this.shuffleColor();
   }
 
   settings() {
@@ -123,6 +123,7 @@ export default class Sketch {
         derivatives: "#extension GL_OES_standard_derivatives : enable"
       },
       side: THREE.DoubleSide,
+      // depth: THREE.DepthPackingStrategies,
       uniforms: {
         time: { value: 0 },
         progress: { value: 0 },
@@ -137,12 +138,15 @@ export default class Sketch {
       transparent: true,
       vertexShader: vertex,
       fragmentShader: fragment, 
-      depthTest: false,
+      depthTest: true,
       depthWrite: false,
-      blend: THREE.CustomBlending,
-      blendSrc: THREE.OneFactor,
-      blendDst: THREE.OneMinusSrcAlphaFactor,
-      // blend: THREE.MultiplyBlending,
+      alphaTest: 0.5,
+      // blend: THREE.CustomBlending,
+      // blendSrc: THREE.OneFactor,
+      // blendDst: THREE.OneMinusSrcAlphaFactor,
+      blend: THREE.MultiplyBlending,
+      minFilter: THREE.NearestFilter,
+      magFilter: THREE.NearestFilter
       // minFilter: THREE.LinearFilter,
       // magFilter: THREE.LinearFilter
     });
@@ -178,6 +182,7 @@ export default class Sketch {
     this.scene.add(this.plane);
   }
 
+  // COMMENT FOR VIDEO NEED TO SET A DELAY to slow the change
   mouseEvent() {
     window.addEventListener('mousemove', (event) => {
       this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -195,7 +200,8 @@ export default class Sketch {
       
         
       if(intersects[0]) {
-        this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
+        // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
+        gsap.utils.shuffle(this.colorArray) / this.time
       }
 
       // for ( let i = 0; i < intersects.length; i ++ ) {
@@ -204,21 +210,21 @@ export default class Sketch {
     });
   }
 
-  // raycasterEvent() {
-  //   window.addEventListener('pointermove', (event) => {
+  raycasterEvent() {
+    window.addEventListener('pointermove', (event) => {
 
-  //     this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
-  //     this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
+      this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
+      this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
 
-  //     this.raycaster.setFromCamera(this.pointer, this.camera);
-  //     const intersects = this.raycaster.intersectObjects([this.plane]);
+      this.raycaster.setFromCamera(this.pointer, this.camera);
+      const intersects = this.raycaster.intersectObjects([this.plane]);
 
-  //     if(intersects[0]) {
-  //       this.point.copy(intersects[0].point)
-  //     }
+      if(intersects[0]) {
+        this.point.copy(intersects[0].point)
+      }
       
-  //   });
-  // }
+    });
+  }
 
   changeColor() {
     document.getElementById('container').addEventListener('click', () => {
@@ -231,6 +237,12 @@ export default class Sketch {
       
     })
   }
+
+  // shuffleColor() {
+  //   tl = gsap.timeline()
+  //   gsap.utils.shuffle(this.colorArray) + this.time
+  //   return
+  // }
 
   stop() {
     this.isPlaying = false;
