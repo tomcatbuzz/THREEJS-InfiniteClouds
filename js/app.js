@@ -18,6 +18,7 @@ import clouds from '../img/clouds.png';
 import test from '../img/myStrokes.png';
 import cloud9 from '../img/cloud9.png';
 import cloud10 from '../img/clouds10.png';
+import env from '../img/env.png';
 
 import gsap from 'gsap';
 
@@ -128,9 +129,9 @@ export default class Sketch {
         time: { value: 0 },
         progress: { value: 0 },
         texture1: { value: null },
-        // t1: { value: new THREE.TextureLoader().load(brush) },
-        t1: { value: this.loader.load(clouds) },
-        // t2: { value: new THREE.TextureLoader().load(blog) },
+        t1: { value: new THREE.TextureLoader().load(env) },
+        // t1: { value: this.loader.load(clouds) },
+        t2: { value: new THREE.TextureLoader().load(clouds) },
         resolution: { value: new THREE.Vector4() },
         uvRate1: { value: new THREE.Vector2(1, 1) },
       },
@@ -140,13 +141,13 @@ export default class Sketch {
       fragmentShader: fragment, 
       depthTest: true,
       depthWrite: false,
-      alphaTest: 0.5,
+      // alphaTest: 0.5,
       // blend: THREE.CustomBlending,
       // blendSrc: THREE.OneFactor,
       // blendDst: THREE.OneMinusSrcAlphaFactor,
-      blend: THREE.MultiplyBlending,
-      minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter
+      // blend: THREE.MultiplyBlending,
+      // minFilter: THREE.NearestFilter,
+      // magFilter: THREE.NearestFilter
       // minFilter: THREE.LinearFilter,
       // magFilter: THREE.LinearFilter
     });
@@ -155,6 +156,7 @@ export default class Sketch {
     this.ig = new THREE.InstancedBufferGeometry();
     console.log(this.ig)
     this.ig.attributes = this.geometry.attributes;
+    console.log(this.ig.index, "wtf main")
     this.ig.index = this.geometry.index;
 
     let number = 1000;
@@ -196,12 +198,14 @@ export default class Sketch {
 
       // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
       
-      console.log(this.index, 'index')
+      console.log(this.mouse.x, 'x')
       
         
       if(intersects[0]) {
         // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
         gsap.utils.shuffle(this.colorArray) / this.time
+        // gsap.utils.shuffle(gsap.utils.interpolate(-1, 1, 0.75)) / this.time
+        
       }
 
       // for ( let i = 0; i < intersects.length; i ++ ) {
@@ -210,21 +214,21 @@ export default class Sketch {
     });
   }
 
-  raycasterEvent() {
-    window.addEventListener('pointermove', (event) => {
+  // raycasterEvent() {
+  //   window.addEventListener('pointermove', (event) => {
 
-      this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
-      this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
+  //     this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
+  //     this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
 
-      this.raycaster.setFromCamera(this.pointer, this.camera);
-      const intersects = this.raycaster.intersectObjects([this.plane]);
+  //     this.raycaster.setFromCamera(this.pointer, this.camera);
+  //     const intersects = this.raycaster.intersectObjects([this.plane]);
 
-      if(intersects[0]) {
-        this.point.copy(intersects[0].point)
-      }
+  //     if(intersects[0]) {
+  //       this.point.copy(intersects[0].point)
+  //     }
       
-    });
-  }
+  //   });
+  // }
 
   changeColor() {
     document.getElementById('container').addEventListener('click', () => {

@@ -36301,7 +36301,7 @@ class MapControls extends OrbitControls {
 
 exports.MapControls = MapControls;
 },{"three":"node_modules/three/build/three.module.js"}],"js/shader/fragment.glsl":[function(require,module,exports) {
-module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float progress;\nuniform sampler2D t1;\nuniform sampler2D t2;\nuniform vec4 resolution;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nfloat PI = 3.141592653589793238;\nvarying float vAlpha;\nvoid main()\t{\n\t// pink\n  // vec3 color = vec3(0.835, 0.000, 0.564);\n\t// dark blue\n\tvec3 color = vec3(0., 0.000, 139.);\n\t\n\tvec4 map = texture2D(t1, vUv);\n  \n\tif(map.r < 0.03) discard;\n\n\t// vec3 final = color*map.r;\n\tvec3 final = mix(vec3(1.), color, 1. - map.r);\n  // values below were 0.5 and 1\n\tfloat opacity = smoothstep(0.3, 1.5, length(vPosition.xy));\n\tgl_FragColor = vec4(vUv, 0.0, vAlpha);\n\t// gl_FragColor = map;\n\tgl_FragColor = vec4(final, vAlpha*opacity*0.2);\n\t// gl_FragColor.a = vAlpha*opacity;\n\t// gl_FragColor = vec4(opacity);\n}";
+module.exports = "#define GLSLIFY 1\nuniform float time;\nuniform float progress;\nuniform sampler2D t1;\nuniform sampler2D t2;\nuniform vec4 resolution;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nfloat PI = 3.141592653589793238;\nvarying float vAlpha;\nvoid main()\t{\n\t// pink\n  // vec3 color = vec3(0.835, 0.000, 0.564);\n\t// dark blue\n\tvec3 color = vec3(0., 0.000, 139.);\n\t\n\t// vec4 map = texture2D(t1, vUv);\n\tvec4 map = texture2D(t1, vUv);\n\tvec4 map2 = texture2D(t2, vUv);\n  \n\tif(map.r < 0.03) discard;\n\tif(map2.r < 0.03) discard;\n\n\t// vec3 final = color*map.r;\n\tvec3 final = mix(vec3(1.), color, 1. - map.r) + mix(vec3(1.), color, 1. - map2.r);\n  // values below were 0.5 and 1\n\tfloat opacity = smoothstep(0.5, 1., length(vPosition.xy));\n\tgl_FragColor = vec4(vUv, 0.0, vAlpha);\n\t// gl_FragColor = map;\n\tgl_FragColor = vec4(final, vAlpha*opacity*0.2);\n\t// gl_FragColor.a = vAlpha*opacity;\n\t// gl_FragColor = vec4(opacity);\n}";
 },{}],"js/shader/vertex.glsl":[function(require,module,exports) {
 module.exports = "#define GLSLIFY 1\nuniform float time;\nvarying vec2 vUv;\nvarying vec3 vPosition;\nvarying float vAlpha;\nuniform vec2 pixels;\nattribute vec3 translate;\nattribute float aRotate;\n\nmat4 rotationMatrix(vec3 axis, float angle) {\n    axis = normalize(axis);\n    float s = sin(angle);\n    float c = cos(angle);\n    float oc = 1.0 - c;\n    \n    return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,\n                oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,\n                oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,\n                0.0,                                0.0,                                0.0,                                1.0);\n}\n\nvec3 rotate(vec3 v, vec3 axis, float angle) {\n\tmat4 m = rotationMatrix(axis, angle);\n\treturn (m * vec4(v, 1.0)).xyz;\n}\n\nfloat PI = 3.141592653589793238;\nvoid main() {\n  // create random on this value + 0.33 to change in sprite\n  vUv = (uv - vec2(0.5))/3. + vec2(0.5 + 0.33, 0.5);\n  \n  float depth = 5.;\n  // original uv before 6image file using cloud2 nice\n  // vUv = uv;\n  vec3 newpos = position;\n  \n  newpos = rotate(newpos, vec3(0., 0., 1.), aRotate);\n  newpos += translate;\n  newpos.z = -mod(newpos.z - time*0.01, 5.);\n  // calculate distance\n  vPosition = newpos;\n  vAlpha = smoothstep(-5. +3.5, -4. +3.5, newpos.z);\n  gl_Position = projectionMatrix * modelViewMatrix * vec4( newpos, 1.0 );\n}";
 },{}],"node_modules/dat.gui/build/dat.gui.module.js":[function(require,module,exports) {
@@ -39238,6 +39238,8 @@ module.exports = "/myStrokes.e68ebe54.png";
 module.exports = "/cloud9.27436a7d.png";
 },{}],"img/clouds10.png":[function(require,module,exports) {
 module.exports = "/clouds10.968844b8.png";
+},{}],"img/env.png":[function(require,module,exports) {
+module.exports = "/env.c531d3bd.png";
 },{}],"node_modules/gsap/gsap-core.js":[function(require,module,exports) {
 "use strict";
 
@@ -45464,6 +45466,8 @@ var _cloud7 = _interopRequireDefault(require("../img/cloud9.png"));
 
 var _clouds2 = _interopRequireDefault(require("../img/clouds10.png"));
 
+var _env = _interopRequireDefault(require("../img/env.png"));
+
 var _gsap = _interopRequireDefault(require("gsap"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
@@ -45568,11 +45572,13 @@ class Sketch {
         texture1: {
           value: null
         },
-        // t1: { value: new THREE.TextureLoader().load(brush) },
         t1: {
-          value: this.loader.load(_clouds.default)
+          value: new THREE.TextureLoader().load(_env.default)
         },
-        // t2: { value: new THREE.TextureLoader().load(blog) },
+        // t1: { value: this.loader.load(clouds) },
+        t2: {
+          value: new THREE.TextureLoader().load(_clouds.default)
+        },
         resolution: {
           value: new THREE.Vector4()
         },
@@ -45585,14 +45591,14 @@ class Sketch {
       vertexShader: _vertex.default,
       fragmentShader: _fragment.default,
       depthTest: true,
-      depthWrite: false,
-      alphaTest: 0.5,
+      depthWrite: false // alphaTest: 0.5,
       // blend: THREE.CustomBlending,
       // blendSrc: THREE.OneFactor,
       // blendDst: THREE.OneMinusSrcAlphaFactor,
-      blend: THREE.MultiplyBlending,
-      minFilter: THREE.NearestFilter,
-      magFilter: THREE.NearestFilter // minFilter: THREE.LinearFilter,
+      // blend: THREE.MultiplyBlending,
+      // minFilter: THREE.NearestFilter,
+      // magFilter: THREE.NearestFilter
+      // minFilter: THREE.LinearFilter,
       // magFilter: THREE.LinearFilter
 
     });
@@ -45600,6 +45606,7 @@ class Sketch {
     this.ig = new THREE.InstancedBufferGeometry();
     console.log(this.ig);
     this.ig.attributes = this.geometry.attributes;
+    console.log(this.ig.index, "wtf main");
     this.ig.index = this.geometry.index;
     let number = 1000;
     let translateArray = new Float32Array(number * 3);
@@ -45628,30 +45635,28 @@ class Sketch {
       console.log(intersects, "hello");
       this.scene.background = this.colorArray[this.index]; // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
 
-      console.log(this.index, 'index');
+      console.log(this.mouse.x, 'x');
 
       if (intersects[0]) {
         // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
-        _gsap.default.utils.shuffle(this.colorArray) / this.time;
+        _gsap.default.utils.shuffle(this.colorArray) / this.time; // gsap.utils.shuffle(gsap.utils.interpolate(-1, 1, 0.75)) / this.time
       } // for ( let i = 0; i < intersects.length; i ++ ) {
       //   intersects[ i ].object.material.color.set( 0xff0000 );
       // }
 
     });
-  }
+  } // raycasterEvent() {
+  //   window.addEventListener('pointermove', (event) => {
+  //     this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
+  //     this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
+  //     this.raycaster.setFromCamera(this.pointer, this.camera);
+  //     const intersects = this.raycaster.intersectObjects([this.plane]);
+  //     if(intersects[0]) {
+  //       this.point.copy(intersects[0].point)
+  //     }
+  //   });
+  // }
 
-  raycasterEvent() {
-    window.addEventListener('pointermove', event => {
-      this.pointer.x = event.clientX / this.width * 2 - 1;
-      this.pointer.y = -(event.clientY / this.height) * 2 + 1;
-      this.raycaster.setFromCamera(this.pointer, this.camera);
-      const intersects = this.raycaster.intersectObjects([this.plane]);
-
-      if (intersects[0]) {
-        this.point.copy(intersects[0].point);
-      }
-    });
-  }
 
   changeColor() {
     document.getElementById('container').addEventListener('click', () => {
@@ -45693,7 +45698,7 @@ exports.default = Sketch;
 new Sketch({
   dom: document.getElementById('container')
 });
-},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shader/fragment.glsl":"js/shader/fragment.glsl","./shader/vertex.glsl":"js/shader/vertex.glsl","dat.gui":"node_modules/dat.gui/build/dat.gui.module.js","../img/brush-stroke2.png":"img/brush-stroke2.png","../img/cloud.png":"img/cloud.png","../img/cloud2.png":"img/cloud2.png","../img/cloud3.png":"img/cloud3.png","../img/cloud4.png":"img/cloud4.png","../img/cloud5.png":"img/cloud5.png","../img/cloud6.png":"img/cloud6.png","../img/cloud-strokes-six.png":"img/cloud-strokes-six.png","../img/stroke-new.png":"img/stroke-new.png","../img/clouds.png":"img/clouds.png","../img/myStrokes.png":"img/myStrokes.png","../img/cloud9.png":"img/cloud9.png","../img/clouds10.png":"img/clouds10.png","gsap":"node_modules/gsap/index.js"}],"../../../Users/Tony/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"three":"node_modules/three/build/three.module.js","three/examples/jsm/controls/OrbitControls.js":"node_modules/three/examples/jsm/controls/OrbitControls.js","./shader/fragment.glsl":"js/shader/fragment.glsl","./shader/vertex.glsl":"js/shader/vertex.glsl","dat.gui":"node_modules/dat.gui/build/dat.gui.module.js","../img/brush-stroke2.png":"img/brush-stroke2.png","../img/cloud.png":"img/cloud.png","../img/cloud2.png":"img/cloud2.png","../img/cloud3.png":"img/cloud3.png","../img/cloud4.png":"img/cloud4.png","../img/cloud5.png":"img/cloud5.png","../img/cloud6.png":"img/cloud6.png","../img/cloud-strokes-six.png":"img/cloud-strokes-six.png","../img/stroke-new.png":"img/stroke-new.png","../img/clouds.png":"img/clouds.png","../img/myStrokes.png":"img/myStrokes.png","../img/cloud9.png":"img/cloud9.png","../img/clouds10.png":"img/clouds10.png","../img/env.png":"img/env.png","gsap":"node_modules/gsap/index.js"}],"../../../Users/Tony/AppData/Roaming/npm/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -45721,7 +45726,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58648" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50651" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
