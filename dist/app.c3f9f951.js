@@ -45531,7 +45531,9 @@ class Sketch {
     this.setupResize();
     this.settings();
     this.mouseEvent();
-    this.changeColor(); // this.shuffleColor();
+    this.changeColor();
+    this.colorEvent(); // this.test();
+    // this.shuffleColor();
   }
 
   settings() {
@@ -45623,6 +45625,27 @@ class Sketch {
     this.ig.setAttribute('aRotate', new THREE.InstancedBufferAttribute(rotateArray, 1));
     this.plane = new THREE.Mesh(this.ig, this.material);
     this.scene.add(this.plane);
+  } // test() {
+  //   this.scene.background = this.colorArray[this.index];
+  //   this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1;
+  // }
+
+
+  colorEvent() {
+    const tl = _gsap.default.timeline({
+      repeat: -1,
+      onRepeat: function () {
+        this.invalidate();
+      }
+    });
+
+    this.colorArray.forEach(function (item, index) {
+      tl.to(this.scene.background, {
+        duration: 3,
+        ease: 'power1.out',
+        backgroundColor: item
+      });
+    });
   } // COMMENT FOR VIDEO NEED TO SET A DELAY to slow the change
 
 
@@ -45633,13 +45656,23 @@ class Sketch {
       this.raycaster.setFromCamera(this.mouse, this.camera);
       const intersects = this.raycaster.intersectObjects([this.plane]);
       console.log(intersects, "hello");
-      this.scene.background = this.colorArray[this.index]; // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
-
       console.log(this.mouse.x, 'x');
+      console.log(this.scene.background, 'Background');
+      console.log(this.time, 'Time'); // if(intersects[0]) {
 
-      if (intersects[0]) {
-        // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
-        _gsap.default.utils.shuffle(this.colorArray) / this.time; // gsap.utils.shuffle(gsap.utils.interpolate(-1, 1, 0.75)) / this.time
+      if (intersects.length > 0) {
+        // this.scene.background = this.colorArray[this.index];
+        // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+        this.target = _gsap.default.utils.toArray(this.colorArray);
+
+        const tl = _gsap.default.timeline();
+
+        tl.to(this.target, {
+          duration: 3,
+          repeat: 1,
+          ease: 'power1.out'
+        });
+        console.log(intersects[0], 'IF intersect');
       } // for ( let i = 0; i < intersects.length; i ++ ) {
       //   intersects[ i ].object.material.color.set( 0xff0000 );
       // }
@@ -45726,7 +45759,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50651" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55457" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

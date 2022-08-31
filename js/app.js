@@ -92,6 +92,8 @@ export default class Sketch {
     this.settings();
     this.mouseEvent();
     this.changeColor();
+    this.colorEvent();
+    // this.test();
     // this.shuffleColor();
   }
 
@@ -184,6 +186,27 @@ export default class Sketch {
     this.scene.add(this.plane);
   }
 
+  // test() {
+  //   this.scene.background = this.colorArray[this.index];
+  //   this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1;
+  // }
+
+colorEvent() {
+  const tl = gsap.timeline({
+    repeat: -1,
+    onRepeat: function() { this.invalidate(); }
+  });
+  
+  this.colorArray.forEach(function(item, index) {
+    tl.to(this.scene.background, {
+      duration: 3,
+      ease: 'power1.out',
+      backgroundColor: item
+    });
+  });
+} 
+
+
   // COMMENT FOR VIDEO NEED TO SET A DELAY to slow the change
   mouseEvent() {
     window.addEventListener('mousemove', (event) => {
@@ -193,19 +216,22 @@ export default class Sketch {
       
       const intersects = this.raycaster.intersectObjects([this.plane]);
       console.log(intersects, "hello");
-
-      this.scene.background = this.colorArray[this.index];
-
-      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
-      
       console.log(this.mouse.x, 'x')
+      console.log(this.scene.background, 'Background')
+      console.log(this.time, 'Time')
       
-        
-      if(intersects[0]) {
-        // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
-        gsap.utils.shuffle(this.colorArray) / this.time
-        // gsap.utils.shuffle(gsap.utils.interpolate(-1, 1, 0.75)) / this.time
-        
+      // if(intersects[0]) {
+        if(intersects.length > 0) {
+        // this.scene.background = this.colorArray[this.index];
+        // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+        this.target = gsap.utils.toArray(this.colorArray)
+        const tl = gsap.timeline()
+          tl.to(this.target, {
+          duration: 3,
+          repeat: 1, 
+          ease: 'power1.out'
+        })
+        console.log(intersects[0], 'IF intersect')        
       }
 
       // for ( let i = 0; i < intersects.length; i ++ ) {
