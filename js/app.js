@@ -5,22 +5,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import fragment from './shader/fragment.glsl';
 import vertex from './shader/vertex.glsl';
 import * as dat from 'dat.gui';
-import brush from '../img/brush-stroke2.png';
-import cloud from '../img/cloud.png';
-import cloud2 from '../img/cloud2.png';
-import cloud3 from '../img/cloud3.png';
-import cloud4 from '../img/cloud4.png';
-import cloud5 from '../img/cloud5.png';
-import cloud6 from '../img/cloud6.png';
-import cloud7 from '../img/cloud-strokes-six.png';
-import cloud8 from '../img/stroke-new.png';
 import clouds from '../img/clouds.png';
-import test from '../img/myStrokes.png';
-import cloud9 from '../img/cloud9.png';
-import cloud10 from '../img/clouds10.png';
 import env from '../img/env.png';
 
 import gsap from 'gsap';
+import { Text } from 'troika-three-text'
 
 export default class Sketch {
   constructor(options) {
@@ -33,19 +22,9 @@ export default class Sketch {
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(this.width, this.height);
-    // pastel blue nice 
-    // this.renderer.setClearColor(0xA7C7E7, 1);
-    // bright blue nice 
     this.renderer.setClearColor(0x0096FF, 1);
-    // light blue 
-    // this.renderer.setClearColor(0xADD8E6, 1);
-    // aqua
-    // this.renderer.setClearColor(0x00FFFF, 1);
     this.renderer.physicallyCorrectLights = true;
     this.renderer.outputEncoding = THREE.sRGBEncoding;
-    
-    // not sure if needed here
-    // this.container = document.getElementById("container");
     this.container.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(
@@ -67,16 +46,16 @@ export default class Sketch {
     this.camera.lookAt(0, 0, 2);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.time = 0;
+    this.bgChange = 0;
 
     this.isPlaying = true;
 
     this.loader = new THREE.TextureLoader();
-    this.textures = [cloud, cloud2, cloud3, cloud4, cloud5, cloud6]
 
     this.index = 0;
     this.COLOR = new THREE.Color(0xA7C7E7);
-    this.COLOR1 = new THREE.Color(0xADD8E6);
-    this.COLOR2 = new THREE.Color(0x00FFFF);
+    this.COLOR1 = new THREE.Color(0x008B8B);
+    this.COLOR2 = new THREE.Color(0x0ADD8E6);
     this.COLOR3 = new THREE.Color(0x0096FF);
     this.COLOR4 = new THREE.Color(0xFFB6C1);
     this.colorArray = [this.COLOR, this.COLOR1, this.COLOR2, this.COLOR3, this.COLOR4]
@@ -93,8 +72,6 @@ export default class Sketch {
     this.mouseEvent();
     this.changeColor();
     this.colorEvent();
-    // this.test();
-    // this.shuffleColor();
   }
 
   settings() {
@@ -126,13 +103,11 @@ export default class Sketch {
         derivatives: "#extension GL_OES_standard_derivatives : enable"
       },
       side: THREE.DoubleSide,
-      // depth: THREE.DepthPackingStrategies,
       uniforms: {
         time: { value: 0 },
         progress: { value: 0 },
         texture1: { value: null },
         t1: { value: new THREE.TextureLoader().load(env) },
-        // t1: { value: this.loader.load(clouds) },
         t2: { value: new THREE.TextureLoader().load(clouds) },
         resolution: { value: new THREE.Vector4() },
         uvRate1: { value: new THREE.Vector2(1, 1) },
@@ -143,20 +118,13 @@ export default class Sketch {
       fragmentShader: fragment, 
       depthTest: true,
       depthWrite: false,
-      // alphaTest: 0.5,
-      // blend: THREE.CustomBlending,
-      // blendSrc: THREE.OneFactor,
-      // blendDst: THREE.OneMinusSrcAlphaFactor,
-      // blend: THREE.MultiplyBlending,
-      // minFilter: THREE.NearestFilter,
-      // magFilter: THREE.NearestFilter
-      // minFilter: THREE.LinearFilter,
-      // magFilter: THREE.LinearFilter
+      // blending: THREE.CustomBlending
+      blending: THREE.AdditiveBlending
     });
     this.geometry = new THREE.PlaneBufferGeometry(0.5, 0.5, 1, 1);
 
     this.ig = new THREE.InstancedBufferGeometry();
-    console.log(this.ig)
+    console.log(this.ig, 'IG this')
     this.ig.attributes = this.geometry.attributes;
     console.log(this.ig.index, "wtf main")
     this.ig.index = this.geometry.index;
@@ -184,28 +152,24 @@ export default class Sketch {
 
     this.plane = new THREE.Mesh(this.ig, this.material);
     this.scene.add(this.plane);
+
+    const myText = new Text()
+    this.scene.add(myText)
+
+    // Set properties to configure:
+    myText.text = 'Awesome'
+    myText.fontSize = 1
+    myText.anchorX = 'center'
+    myText.position.z = -2
+    myText.color = 0xFFFFFF
+
+    // Update the rendering:
+    myText.sync()
   }
 
-  // test() {
-  //   this.scene.background = this.colorArray[this.index];
-  //   this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1;
-  // }
-
-colorEvent() {
-  const tl = gsap.timeline({
-    repeat: -1,
-    onRepeat: function() { this.invalidate(); }
-  });
-  
-  this.colorArray.forEach(function(item, index) {
-    tl.to(this.scene.background, {
-      duration: 3,
-      ease: 'power1.out',
-      backgroundColor: item
-    });
-  });
-} 
-
+  easeInExpo (t, b, c, d) {
+    return (t == 0) ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
+  }
 
   // COMMENT FOR VIDEO NEED TO SET A DELAY to slow the change
   mouseEvent() {
@@ -215,64 +179,38 @@ colorEvent() {
       this.raycaster.setFromCamera(this.mouse, this.camera);
       
       const intersects = this.raycaster.intersectObjects([this.plane]);
-      console.log(intersects, "hello");
-      console.log(this.mouse.x, 'x')
-      console.log(this.scene.background, 'Background')
-      console.log(this.time, 'Time')
-      
-      // if(intersects[0]) {
-        if(intersects.length > 0) {
-        // this.scene.background = this.colorArray[this.index];
-        // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
-        this.target = gsap.utils.toArray(this.colorArray)
-        const tl = gsap.timeline()
-          tl.to(this.target, {
-          duration: 3,
-          repeat: 1, 
-          ease: 'power1.out'
-        })
-        console.log(intersects[0], 'IF intersect')        
-      }
 
-      // for ( let i = 0; i < intersects.length; i ++ ) {
-		  //   intersects[ i ].object.material.color.set( 0xff0000 );
-	    // }
+        if(intersects[0]) {
+          // this.scene.background.copy(this.COLOR1).lerp(this.COLOR2, 0.5 * (Math.sin(this.time) + 1));
+          // for(this.index = 0; this.colorArray.length; this.index++) {
+          //   this.scene.background = this.colorArray[Math.floor(this.bgchange)%this.colorArray.length]
+          // }
+          
+          // this.point.copy(intersects[0].point)
+        }
+        // console.log(this.colorArray, "Color")
     });
   }
 
-  // raycasterEvent() {
-  //   window.addEventListener('pointermove', (event) => {
-
-  //     this.pointer.x = ( event.clientX / this.width ) * 2 - 1;
-  //     this.pointer.y = - ( event.clientY / this.height ) * 2 + 1;
-
-  //     this.raycaster.setFromCamera(this.pointer, this.camera);
-  //     const intersects = this.raycaster.intersectObjects([this.plane]);
-
-  //     if(intersects[0]) {
-  //       this.point.copy(intersects[0].point)
-  //     }
-      
-  //   });
-  // }
+  colorEvent() {
+    this.scene.background.copy(this.COLOR1).lerp(this.COLOR2, 0.5 * (Math.sin(this.time) + 1));
+  } 
 
   changeColor() {
     document.getElementById('container').addEventListener('click', () => {
-      // this.scene.background = new THREE.Color(0xA7C7E7)
-      this.scene.background = this.colorArray[this.index];
 
-      this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1 
+      // const lerp = 0.2
+
+      // console.log(lerp, 'LERP')
+      
+      this.scene.background = this.colorArray[this.index]
+      
+      this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
 
       console.log(this.index, 'index')
       
     })
   }
-
-  // shuffleColor() {
-  //   tl = gsap.timeline()
-  //   gsap.utils.shuffle(this.colorArray) + this.time
-  //   return
-  // }
 
   stop() {
     this.isPlaying = false;
@@ -288,6 +226,8 @@ colorEvent() {
   render() {
     if (!this.isPlaying) return;
     this.time += 0.05;
+    this.bgChange += 0.01;
+    
     this.material.uniforms.time.value = this.time;
     this.material.uniforms.progress.value = this.settings.progress;
     requestAnimationFrame(this.render.bind(this));

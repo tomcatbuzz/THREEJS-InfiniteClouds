@@ -10,7 +10,8 @@
   "dependencies": {
     "dat.gui": "^0.7.9",
     "gsap": "^3.11.0",
-    "three": "^0.141.0"
+    "three": "^0.144.0",
+    "troika-three-text": "^0.46.4"
   },
   "browserslist": [
     "defaults",

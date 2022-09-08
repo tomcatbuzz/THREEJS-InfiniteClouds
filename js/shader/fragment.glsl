@@ -5,6 +5,7 @@ uniform sampler2D t2;
 uniform vec4 resolution;
 varying vec2 vUv;
 varying vec3 vPosition;
+// varying vec3 color;
 float PI = 3.141592653589793238;
 varying float vAlpha;
 void main()	{
