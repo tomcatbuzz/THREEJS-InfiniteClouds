@@ -46,7 +46,7 @@ export default class Sketch {
     this.camera.lookAt(0, 0, 2);
     this.controls = new OrbitControls(this.camera, this.renderer.domElement);
     this.time = 0;
-    this.bgChange = 0;
+    // this.bgChange = 0;
 
     this.isPlaying = true;
 
@@ -193,7 +193,33 @@ export default class Sketch {
   }
 
   colorEvent() {
-    this.scene.background.copy(this.COLOR1).lerp(this.COLOR2, 0.5 * (Math.sin(this.time) + 1));
+    document.getElementById('container').addEventListener('mousemove', () => {
+
+      // this.scene.background = this.colorArray[this.index]
+      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+
+      for(this.index = 0; this.index < this.colorArray.length; this.index++) {
+        this.scene.background = this.colorArray[this.index]
+        console.log(this.scene.background, "background")
+      }
+      
+      // gsap.to(this.colorArray[this.index], {
+      //   duration: 2,
+      //   ease: 'power1.out'         
+      // })
+      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+      // console.log(this.colorArray[this.index], 'Length')
+    
+    //   gsap.to('container', {
+    //     duration: 1,
+    //     ease: 'power1.out',
+    //     onUpdate: () => {
+    //       this.material.color = new THREE.Color()
+    //       .lerpColors(currentColor, selectedColor)
+    //       this.material.color.needsUpdate = true
+    //     }
+    //   })
+    })
   } 
 
   changeColor() {
@@ -226,7 +252,7 @@ export default class Sketch {
   render() {
     if (!this.isPlaying) return;
     this.time += 0.05;
-    this.bgChange += 0.01;
+    // this.bgChange += 0.01;
     
     this.material.uniforms.time.value = this.time;
     this.material.uniforms.progress.value = this.settings.progress;

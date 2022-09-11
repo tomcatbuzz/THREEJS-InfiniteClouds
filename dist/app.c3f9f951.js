@@ -54483,8 +54483,8 @@ class Sketch {
     this.camera.position.set(0, 0, 0.1);
     this.camera.lookAt(0, 0, 2);
     this.controls = new _OrbitControls.OrbitControls(this.camera, this.renderer.domElement);
-    this.time = 0;
-    this.bgChange = 0;
+    this.time = 0; // this.bgChange = 0;
+
     this.isPlaying = true;
     this.loader = new THREE.TextureLoader();
     this.index = 0;
@@ -54622,7 +54622,29 @@ class Sketch {
   }
 
   colorEvent() {
-    this.scene.background.copy(this.COLOR1).lerp(this.COLOR2, 0.5 * (Math.sin(this.time) + 1));
+    document.getElementById('container').addEventListener('mousemove', () => {
+      // this.scene.background = this.colorArray[this.index]
+      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+      for (this.index = 0; this.index < this.colorArray.length; this.index++) {
+        this.scene.background = this.colorArray[this.index];
+        console.log(this.scene.background, "background");
+      } // gsap.to(this.colorArray[this.index], {
+      //   duration: 2,
+      //   ease: 'power1.out'         
+      // })
+      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+      // console.log(this.colorArray[this.index], 'Length')
+      //   gsap.to('container', {
+      //     duration: 1,
+      //     ease: 'power1.out',
+      //     onUpdate: () => {
+      //       this.material.color = new THREE.Color()
+      //       .lerpColors(currentColor, selectedColor)
+      //       this.material.color.needsUpdate = true
+      //     }
+      //   })
+
+    });
   }
 
   changeColor() {
@@ -54648,8 +54670,8 @@ class Sketch {
 
   render() {
     if (!this.isPlaying) return;
-    this.time += 0.05;
-    this.bgChange += 0.01;
+    this.time += 0.05; // this.bgChange += 0.01;
+
     this.material.uniforms.time.value = this.time;
     this.material.uniforms.progress.value = this.settings.progress;
     requestAnimationFrame(this.render.bind(this));
@@ -54690,7 +54712,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59543" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55969" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
