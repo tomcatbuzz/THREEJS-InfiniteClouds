@@ -18,7 +18,7 @@ export default class Sketch {
     this.width = this.container.offsetWidth;
     this.height = this.container.offsetHeight;
     this.renderer = new THREE.WebGLRenderer({
-      antialias: true,     
+      antialias: true,
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(this.width, this.height);
@@ -28,9 +28,9 @@ export default class Sketch {
     this.container.appendChild(this.renderer.domElement);
 
     this.camera = new THREE.PerspectiveCamera(
-      70, 
-      window.innerWidth / window.innerHeight, 
-      0.001, 
+      70,
+      window.innerWidth / window.innerHeight,
+      0.001,
       1000
     );
 
@@ -69,9 +69,7 @@ export default class Sketch {
     this.render();
     this.setupResize();
     this.settings();
-    this.mouseEvent();
-    this.changeColor();
-    this.colorEvent();
+    this.handleEvent();
   }
 
   settings() {
@@ -115,7 +113,7 @@ export default class Sketch {
       // wireframe: true,
       transparent: true,
       vertexShader: vertex,
-      fragmentShader: fragment, 
+      fragmentShader: fragment,
       depthTest: true,
       depthWrite: false,
       // blending: THREE.CustomBlending
@@ -130,20 +128,20 @@ export default class Sketch {
     this.ig.index = this.geometry.index;
 
     let number = 1000;
-    let translateArray = new Float32Array(number*3);
+    let translateArray = new Float32Array(number * 3);
     let rotateArray = new Float32Array(number);
 
     let radius = 0.7;
 
     for (let i = 0; i < number; i++) {
-      let theta = Math.random()*2*Math.PI
+      let theta = Math.random() * 2 * Math.PI
       translateArray.set([
-      radius*Math.sin(theta),
-      radius*Math.cos(theta),
-      -Math.random()*5
-      ],3*i)
+        radius * Math.sin(theta),
+        radius * Math.cos(theta),
+        -Math.random() * 5
+      ], 3 * i)
       rotateArray.set([
-        Math.random()*2*Math.PI,
+        Math.random() * 2 * Math.PI,
       ], i)
     }
 
@@ -167,74 +165,56 @@ export default class Sketch {
     myText.sync()
   }
 
-  easeInExpo (t, b, c, d) {
+  easeInExpo(t, b, c, d) {
     return (t == 0) ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
   }
 
-  // COMMENT FOR VIDEO NEED TO SET A DELAY to slow the change
-  mouseEvent() {
-    window.addEventListener('mousemove', (event) => {
-      this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      
-      const intersects = this.raycaster.intersectObjects([this.plane]);
+  isMobile() {
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  }
 
-        if(intersects[0]) {
-          // this.scene.background.copy(this.COLOR1).lerp(this.COLOR2, 0.5 * (Math.sin(this.time) + 1));
-          // for(this.index = 0; this.colorArray.length; this.index++) {
-          //   this.scene.background = this.colorArray[Math.floor(this.bgchange)%this.colorArray.length]
-          // }
-          
-          // this.point.copy(intersects[0].point)
-        }
-        // console.log(this.colorArray, "Color")
+  changeColor() {
+    this.scene.background = this.colorArray[this.index]
+    this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1;
+
+    // use gsap to transition the color
+    gsap.to(this.scene.background, {
+      duration: 1,
+      r: this.colorArray[this.index].r,
+      g: this.colorArray[this.index].g,
+      b: this.colorArray[this.index].b,
+      ease: 'power4.out',
+      onComplete: () => {
+        this.scene.background = this.colorArray[this.index]
+      }
     });
   }
 
-  colorEvent() {
-    document.getElementById('container').addEventListener('mousemove', () => {
+  handleEvent() {
+    const DEVICE = this.isMobile() ? true : false;
+    const CLICKEVENT = DEVICE ? 'touchstart' : 'click';
+    const MOVEEVENT = DEVICE ? 'touchmove' : 'mousemove';
 
-      // this.scene.background = this.colorArray[this.index]
-      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
+    this.start = Date.now()
+    this.current = this.start
+    this.elapsed = 0
+    this.delta = 16
 
-      for(this.index = 0; this.index < this.colorArray.length; this.index++) {
-        this.scene.background = this.colorArray[this.index]
-        console.log(this.scene.background, "background")
-      }
-      
-      // gsap.to(this.colorArray[this.index], {
-      //   duration: 2,
-      //   ease: 'power1.out'         
-      // })
-      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
-      // console.log(this.colorArray[this.index], 'Length')
-    
-    //   gsap.to('container', {
-    //     duration: 1,
-    //     ease: 'power1.out',
-    //     onUpdate: () => {
-    //       this.material.color = new THREE.Color()
-    //       .lerpColors(currentColor, selectedColor)
-    //       this.material.color.needsUpdate = true
-    //     }
-    //   })
+    window.addEventListener(CLICKEVENT, () => {
+      this.changeColor();
     })
-  } 
 
-  changeColor() {
-    document.getElementById('container').addEventListener('click', () => {
-
-      // const lerp = 0.2
-
-      // console.log(lerp, 'LERP')
-      
-      this.scene.background = this.colorArray[this.index]
-      
-      this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
-
-      console.log(this.index, 'index')
-      
+    window.addEventListener(MOVEEVENT, (e) => {
+      const tick = ()=>{
+        this.current = Date.now()
+        this.elapsed = this.current - this.start
+        this.delta = this.current - this.previous
+        this.previous = this.current
+        if(this.elapsed % 2000 < this.delta){
+          this.changeColor();
+          requestAnimationFrame(tick)
+        }
+      }; tick()
     })
   }
 
@@ -253,7 +233,7 @@ export default class Sketch {
     if (!this.isPlaying) return;
     this.time += 0.05;
     // this.bgChange += 0.01;
-    
+
     this.material.uniforms.time.value = this.time;
     this.material.uniforms.progress.value = this.settings.progress;
     requestAnimationFrame(this.render.bind(this));
