@@ -1,0 +1,1 @@
+{"mappings":"AAAA;;;;;AAKA;;;;;AAKA","sources":["css/app.css"],"sourcesContent":["* {\r\n  margin: 0;\r\n  padding: 0;\r\n} \r\n\r\ncanvas {\r\n  display: block;\r\n  cursor: pointer;\r\n}\r\n\r\n#container { \r\n  width: 100vw;\r\n  height: 100vh;\r\n}"],"names":[],"version":3,"file":"index.12117c4c.css.map","sourceRoot":"/__parcel_source_root/"}

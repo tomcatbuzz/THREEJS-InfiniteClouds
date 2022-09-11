@@ -1,0 +1,16 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+canvas {
+  cursor: pointer;
+  display: block;
+}
+
+#container {
+  width: 100vw;
+  height: 100vh;
+}
+
+/*# sourceMappingURL=index.12117c4c.css.map */
