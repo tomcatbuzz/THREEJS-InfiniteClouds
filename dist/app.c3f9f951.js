@@ -54502,10 +54502,15 @@ class Sketch {
     this.render();
     this.setupResize();
     this.settings();
-    this.mouseEvent();
-    this.changeColor();
-    this.colorEvent();
-  }
+    this.handleEvent();
+    this.preloadFont;
+  } // preloadFont(
+  //   {
+  //     font: '../fonts/Anthony Hunter Italic.woff', 
+  //     characters: 'abcdefghijklmnopqrstuvwxyz'
+  //   }
+  // )
+
 
   settings() {
     this.settings = {
@@ -54592,68 +54597,64 @@ class Sketch {
 
     myText.text = 'Awesome';
     myText.fontSize = 1;
+    myText.curveRadius = 1;
     myText.anchorX = 'center';
+    myText.anchorY = 'middle';
     myText.position.z = -2;
-    myText.color = 0xFFFFFF; // Update the rendering:
+    myText.color = 0x000000; // Update the rendering:
 
     myText.sync();
   }
 
   easeInExpo(t, b, c, d) {
     return t == 0 ? b : c * Math.pow(2, 10 * (t / d - 1)) + b;
-  } // COMMENT FOR VIDEO NEED TO SET A DELAY to slow the change
-
-
-  mouseEvent() {
-    window.addEventListener('mousemove', event => {
-      this.mouse.x = event.clientX / window.innerWidth * 2 - 1;
-      this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-      this.raycaster.setFromCamera(this.mouse, this.camera);
-      const intersects = this.raycaster.intersectObjects([this.plane]);
-
-      if (intersects[0]) {// this.scene.background.copy(this.COLOR1).lerp(this.COLOR2, 0.5 * (Math.sin(this.time) + 1));
-        // for(this.index = 0; this.colorArray.length; this.index++) {
-        //   this.scene.background = this.colorArray[Math.floor(this.bgchange)%this.colorArray.length]
-        // }
-        // this.point.copy(intersects[0].point)
-      } // console.log(this.colorArray, "Color")
-
-    });
   }
 
-  colorEvent() {
-    document.getElementById('container').addEventListener('mousemove', () => {
-      // this.scene.background = this.colorArray[this.index]
-      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
-      for (this.index = 0; this.index < this.colorArray.length; this.index++) {
-        this.scene.background = this.colorArray[this.index];
-        console.log(this.scene.background, "background");
-      } // gsap.to(this.colorArray[this.index], {
-      //   duration: 2,
-      //   ease: 'power1.out'         
-      // })
-      // this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1
-      // console.log(this.colorArray[this.index], 'Length')
-      //   gsap.to('container', {
-      //     duration: 1,
-      //     ease: 'power1.out',
-      //     onUpdate: () => {
-      //       this.material.color = new THREE.Color()
-      //       .lerpColors(currentColor, selectedColor)
-      //       this.material.color.needsUpdate = true
-      //     }
-      //   })
-
-    });
+  isMobile() {
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   }
 
   changeColor() {
-    document.getElementById('container').addEventListener('click', () => {
-      // const lerp = 0.2
-      // console.log(lerp, 'LERP')
-      this.scene.background = this.colorArray[this.index];
-      this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1;
-      console.log(this.index, 'index');
+    this.scene.background = this.colorArray[this.index];
+    this.index = this.index >= this.colorArray.length - 1 ? 0 : this.index + 1; // use gsap to transition the color
+
+    _gsap.default.to(this.scene.background, {
+      duration: 1,
+      r: this.colorArray[this.index].r,
+      g: this.colorArray[this.index].g,
+      b: this.colorArray[this.index].b,
+      ease: 'power4.out',
+      onComplete: () => {
+        this.scene.background = this.colorArray[this.index];
+      }
+    });
+  }
+
+  handleEvent() {
+    const DEVICE = this.isMobile() ? true : false;
+    const CLICKEVENT = DEVICE ? 'touchstart' : 'click';
+    const MOVEEVENT = DEVICE ? 'touchmove' : 'mousemove';
+    this.start = Date.now();
+    this.current = this.start;
+    this.elapsed = 0;
+    this.delta = 16;
+    window.addEventListener(CLICKEVENT, () => {
+      this.changeColor();
+    });
+    window.addEventListener(MOVEEVENT, e => {
+      const tick = () => {
+        this.current = Date.now();
+        this.elapsed = this.current - this.start;
+        this.delta = this.current - this.previous;
+        this.previous = this.current;
+
+        if (this.elapsed % 2000 < this.delta) {
+          this.changeColor();
+          requestAnimationFrame(tick);
+        }
+      };
+
+      tick();
     });
   }
 
@@ -54712,7 +54713,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55969" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51234" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

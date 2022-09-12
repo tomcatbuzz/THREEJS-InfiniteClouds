@@ -9,6 +9,7 @@ import clouds from '../img/clouds.png';
 import env from '../img/env.png';
 
 import gsap from 'gsap';
+import {preloadFont} from 'troika-three-text'
 import { Text } from 'troika-three-text'
 
 export default class Sketch {
@@ -70,7 +71,15 @@ export default class Sketch {
     this.setupResize();
     this.settings();
     this.handleEvent();
+    this.preloadFont
   }
+
+  // preloadFont(
+  //   {
+  //     font: '../fonts/Anthony Hunter Italic.woff', 
+  //     characters: 'abcdefghijklmnopqrstuvwxyz'
+  //   }
+  // )
 
   settings() {
     this.settings = {
@@ -157,9 +166,11 @@ export default class Sketch {
     // Set properties to configure:
     myText.text = 'Awesome'
     myText.fontSize = 1
+    myText.curveRadius = 1
     myText.anchorX = 'center'
+    myText.anchorY = 'middle'
     myText.position.z = -2
-    myText.color = 0xFFFFFF
+    myText.color = 0x000000
 
     // Update the rendering:
     myText.sync()
