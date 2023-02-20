@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import {ShaderMaterial, TextureLoader, Vector4, PlaneGeometry, InstancedBufferAttribute, DoubleSide, AdditiveBlending, Vector3, InstancedBufferGeometry, Mesh } from "three";
 
 import Sketch from "../Sketch";
 
@@ -6,7 +6,7 @@ import env from '/img/env.png'
 import clouds from '/img/clouds.png'
 
 export default class Clouds {
-    constructor() {
+    constructor(index) {
         this.sketch = new Sketch();
         this.scene = this.sketch.scene;
         this.sizes = this.sketch.sizes;
@@ -16,17 +16,17 @@ export default class Clouds {
     }
 
     createClouds() {
-        const material = new THREE.ShaderMaterial({
+        const material = new ShaderMaterial({
             extensions: {
                 derivatives: "#extension GL_OES_standard_derivatives : enable"
             },
-            side: THREE.DoubleSide,
+            side: DoubleSide,
             uniforms: {
                 time: { value: 0 },
                 progress: { value: 0 },
-                t1: { value: new THREE.TextureLoader().load(env) },
-                t2: { value: new THREE.TextureLoader().load(clouds) },
-                resolution: { value: new THREE.Vector4() },
+                t1: { value: new TextureLoader().load(env) },
+                t2: { value: new TextureLoader().load(clouds) },
+                resolution: { value: new Vector4() },
             },
             transparent: true,
             vertexShader: `
@@ -106,30 +106,30 @@ export default class Clouds {
             `,
             depthTest: true,
             depthWrite: false,
-            // blending: THREE.CustomBlending
-            blending: THREE.AdditiveBlending
+            // blending: CustomBlending
+            blending: AdditiveBlending // AdditiveBlending has a better result
         });
 
-        const geometry = new THREE.PlaneGeometry(0.5, 0.5, 1, 1);
+        const geometry = new PlaneGeometry(0.5, 0.5, 1, 1);
 
-        const ig = new THREE.InstancedBufferGeometry();
+        const ig = new InstancedBufferGeometry();
         ig.attributes = geometry.attributes;
         ig.index = geometry.index;
 
-        const number = 1000;
+        const number = 700;
         const translateArray = new Float32Array(number * 3);
         const rotateArray = new Float32Array(number);
 
         const radius = 0.7;
 
         // use map to create a grid of points
-        const points = new Array(number).fill().map((_, i) => {
+        const points = new Array(number).fill().map((_) => {
             const angle = Math.random() * Math.PI * 2;
             const x = Math.cos(angle) * radius;
             const y = Math.sin(angle) * radius;
             const z = Math.random() * 5;
 
-            return new THREE.Vector3(x, y, z);
+            return new Vector3(x, y, z);
         });
 
         // use points
@@ -141,16 +141,16 @@ export default class Clouds {
             rotateArray[i] = Math.random() * Math.PI * 2;
         });
 
-        ig.setAttribute('translate', new THREE.InstancedBufferAttribute(translateArray, 3));
-        ig.setAttribute('aRotate', new THREE.InstancedBufferAttribute(rotateArray, 1));
+        ig.setAttribute('translate', new InstancedBufferAttribute(translateArray, 3));
+        ig.setAttribute('aRotate', new InstancedBufferAttribute(rotateArray, 1));
 
-        const plane = new THREE.Mesh(ig, material);
+        const plane = new Mesh(ig, material);
         this.scene.add(plane);
     }
 
     update() {
-        this.index++;
-        this.index = this.index % 500;
+        this.index++; // or this.index-- to reverse the animation
+        this.index = this.index % 1000;
 
         this.scene.children[0].material.uniforms.time.value = this.index;
     }
