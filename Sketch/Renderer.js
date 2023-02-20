@@ -5,10 +5,10 @@ import Sketch from "./Sketch";
 export default class Renderer {
     constructor() {
         this.sketch = new Sketch();
+        this.canvas = this.sketch.canvas;
         this.sizes = this.sketch.sizes;
         this.scene = this.sketch.scene;
-        this.camera = this.sketch.camera.instance;
-        this.canvas = this.sketch.canvas;
+        this.camera = this.sketch.camera;
 
         this.setInstance();
     }
@@ -24,6 +24,7 @@ export default class Renderer {
         this.instance.toneMappingExposure = 1.75
         this.instance.shadowMap.enabled = true
         this.instance.shadowMap.type = PCFSoftShadowMap
+        this.instance.setClearColor(0x0096FF, 1);
         this.instance.setSize(this.sizes.width, this.sizes.height)
         this.instance.setPixelRatio(Math.min(this.sizes.pixelRatio, 2))
     }
@@ -34,6 +35,6 @@ export default class Renderer {
     }
 
     update() {
-        this.instance.render(this.scene, this.camera)
+        this.instance.render(this.scene, this.camera.instance)
     }
 }
